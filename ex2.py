@@ -40,13 +40,18 @@ class Table(object):
         self._dataLines += 1
 
     def output_to_file(self):
-        print(self._dataLines)
         if self._dataLines > 0:
-            print("Creating file\n")
+            print("Creating table ", str(self), " with ", self._dataLines,
+                  "entries\n")
             file = open(self._tableName+".csv", "w")
-            file.write(str(self._tableHeaders).strip('[]')+"\n")
+            for head in self.get_header():
+                file.write(str(head).strip("[]'")+',')
+
+            file.write("\n")
             for dat in self._tableData:
-                file.write(str(dat).strip('[]')+"\n")
+                for value in dat:
+                    file.write(str(value).strip('[]"')+',')
+                file.write("\n")
             file.close()
 
 sql_file = open("demo.sql", "r")
@@ -101,7 +106,9 @@ for line in lines:
             # print(data)
             foundTable.add_data(data)
 
-table = tables[3]
-chdir("output")
-table.output_to_file()
 sql_file.close()
+chdir("output")
+# table = tables[3]
+# table.output_to_file()
+for table in tables:
+    table.output_to_file()
