@@ -54,61 +54,50 @@ class Table(object):
                 file.write("\n")
             file.close()
 
-sql_file = open("demo.sql", "r")
-content = sql_file.read()
-tables = []
-lines = content.split(";\n")
-for line in lines:
 
-    line_header = line.split(" `")
-    if line_header[0] == "CREATE TABLE":
+def main():
+    sql_file = open("demo.sql", "r")
+    content = sql_file.read()
+    tables = []
+    lines = content.split(";\n")
+    for line in lines:
 
-        tableName = line_header[1].split("`")[0]
-        headers = line.split("(\n")[1].split("\n)")[0].split(",\n")
-        tableHeaders = []
-        for header in headers:
-            if header.split("`")[0].isspace():
-                tableHeaders.append(header.split("`")[1])
+        line_header = line.split(" `")
+        if line_header[0] == "CREATE TABLE":
 
-        tb = Table(tableName)
-        tb.set_header(tableHeaders)
-        tables.append(tb)
+            table_name = line_header[1].split("`")[0]
+            headers = line.split("(\n")[1].split("\n)")[0].split(",\n")
+            table_headers = []
+            for header in headers:
+                if header.split("`")[0].isspace():
+                    table_headers.append(header.split("`")[1])
 
+            tb = Table(table_name)
+            tb.set_header(table_headers)
+            tables.append(tb)
 
-# print(tables)
-# index = 0
-# for x in tables:
-#     if x.get_table_name() == 'active_list_type':
-#         break
-#     else:
-#         index += 1
-# table = tables[index]
-# table_header = table.get_header()
-# for header in table_header:
-#     print(header)
+    for line in lines:
+        line_header = line.split(" `")
+        if line_header[0] == "INSERT INTO":
+            table_name = line_header[1].split("`")[0]
+            index = 0
+            for x in tables:
+                if x.get_table_name() == table_name:
+                    break
+                else:
+                    index += 1
 
-for line in lines:
-    line_header = line.split(" `")
-    if line_header[0] == "INSERT INTO":
-        tableName = line_header[1].split("`")[0]
-        index = 0
-        for x in tables:
-            if x.get_table_name() == tableName:
-                break
-            else:
-                index += 1
+            found_table = tables[index]
+            data_lines = line.split("VALUES (")[1].split(",(")
+            for data in data_lines:
+                data = data.split(")")[0]
+                data = data.split(",")
+                # print(data)
+                found_table.add_data(data)
 
-        foundTable = tables[index]
-        data_lines = line.split("VALUES (")[1].split(",(")
-        for data in data_lines:
-            data = data.split(")")[0]
-            data = data.split(",")
-            # print(data)
-            foundTable.add_data(data)
+    sql_file.close()
+    chdir("output")
+    for table in tables:
+        table.output_to_file()
 
-sql_file.close()
-chdir("output")
-# table = tables[3]
-# table.output_to_file()
-for table in tables:
-    table.output_to_file()
+main()
