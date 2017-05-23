@@ -105,31 +105,47 @@ class Table(object):
 
 
 def create_tables_from_sql(sql_file):
-    """"""
+    """Parse the SQL file into Table classes and return a list of Table 
+    classes created."""
 
     content = sql_file.read()
     tables = []
+    "Split by ;\n to extract each line of code "
     lines = content.split(";\n")
+
     for line in lines:
 
         line_header = line.split(" `")
+
+        "If command is CREATE TABLE:"
+        "Line header[0] is the first command from the user"
         if line_header[0] == "CREATE TABLE":
 
+            "table name is in the first part of the rest of the user command"
             table_name = line_header[1].split("`")[0]
+
+            "Cleanup the string from various commas"
             headers = line.split("(\n")[1].split("\n)")[0].split(",\n")
             table_headers = []
             for header in headers:
+
+                "Header values are prefixed by only spaces"
                 if header.split("`")[0].isspace():
+
+                    "Take only the name of the header"
                     table_headers.append(header.split("`")[1])
 
+            "Create a Table, update its headers and insert into tables"
             tb = Table(table_name)
             tb.set_header(table_headers)
             tables.append(tb)
 
-    for line in lines:
-        line_header = line.split(" `")
+        "If command is INSERT INTO"
         if line_header[0] == "INSERT INTO":
+
+            "Put into this table:"
             table_name = line_header[1].split("`")[0]
+            "Find the correct table in the tables list by table name"
             index = 0
             for x in tables:
                 if x.get_table_name() == table_name:
@@ -138,6 +154,8 @@ def create_tables_from_sql(sql_file):
                     index += 1
 
             found_table = tables[index]
+
+            "Extract the values of the data line"
             data_lines = line.split("VALUES (")[1].split(",(")
             for data in data_lines:
                 data = data.split(")")[0]
@@ -148,15 +166,20 @@ def create_tables_from_sql(sql_file):
 
 
 def main():
+    """Main opens the SQL file for reading, calls the create_table function"""
     file = open("demo.sql", "r")
     tables = create_tables_from_sql(file)
     file.close()
+    "Try to create a directory."
     try:
         mkdir("output", 0o755, )
+        "If already exists, continue"
     except FileExistsError:
         pass
 
     chdir("output")
+
+    "Create the Table files"
     for table in tables:
         table.output_to_file()
 
