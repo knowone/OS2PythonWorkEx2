@@ -1,14 +1,34 @@
-from os import chdir
+""" 
+This program was written by Omer Schwartz
+    email: kno34w.one.omer at2 g[mail] dot com (remove numbers and brackets)
+    
+    This program takes an indented SQL file, containing table description
+    and data, and creates for each table a separate csv file with the table
+    header and tables.
+"""
+# ------------------------------------------------------------------------------
+from os import chdir, mkdir
 
 
 class Table(object):
+    """
+        Class Table represents a table class the contains a table name, headers
+        and data with a data lines counter. 
+        The class will have specific methods to add data to the table, and write
+        the table to a file.
+    """
     def __init__(self, table_name):
+        """Initialize the Table object with table_name as the table name and
+        File name"""
+
         self._tableName = table_name
         self._tableHeaders = []
         self._tableData = []
-        self._dataLines = 0
+        self._dataLines = 0     # counter for number of data lines added
 
     def __setitem__(self, key, value):
+        """Set the item in key index into the Data list"""
+
         self._tableData[key] = value
 
     def __getitem__(self, item):
@@ -96,6 +116,7 @@ def main():
                 found_table.add_data(data)
 
     sql_file.close()
+    mkdir("output", 0o755)
     chdir("output")
     for table in tables:
         table.output_to_file()
