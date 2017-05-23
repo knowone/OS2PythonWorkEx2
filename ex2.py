@@ -32,42 +32,71 @@ class Table(object):
         self._tableData[key] = value
 
     def __getitem__(self, item):
+        """Get an item from Data list"""
+
         return self._tableData[item]
 
     def __delitem__(self, key):
+        """Delete an item in key index from data table"""
+
         del self._tableData[key]
 
     def __repr__(self):
+        """Table is represented by the table name"""
+
         return repr(self._tableName)
 
     def __str__(self):
         return str(self._tableName)
 
     def __len__(self):
+        """Table length is the amount of data lines it contains"""
+
         return self._dataLines
 
+    def get_header(self):
+        """Set the header lines for the table"""
+
+        return self._tableHeaders
+
     def set_header(self, table_headers):
+        """Sets the headers for the table"""
+
         self._tableHeaders = table_headers
 
     def get_table_name(self):
+        """Get the name of the table (filename)"""
+
         return self._tableName
 
-    def get_header(self):
-        return self._tableHeaders
-
     def add_data(self, table_data):
+        """Add data to the table into data list"""
+
         self._tableData.append(table_data)
         self._dataLines += 1
 
     def output_to_file(self):
+        """Build the table file, creating the file iff the table contains at
+        least 1 data entry. 
+        Prints the file name and the amount og entries in the table to 
+        console"""
+
         if self._dataLines > 0:
             print("Creating table ", str(self), " with ", self._dataLines,
                   "entries\n")
+
+            "append a .csv to filename"
             file = open(self._tableName+".csv", "w")
+
+            "Write headers:"
+            "Perform a string sanitation before writing to file"
             for head in self.get_header():
                 file.write(str(head).strip("[]'")+',')
 
             file.write("\n")
+
+            "Write data to table"
+            "Perform more sanitation on each value of the data line"
             for dat in self._tableData:
                 for value in dat:
                     file.write(str(value).strip('[]"')+',')
@@ -75,8 +104,9 @@ class Table(object):
             file.close()
 
 
-def main():
-    sql_file = open("demo.sql", "r")
+def create_tables_from_sql(sql_file):
+    """"""
+
     content = sql_file.read()
     tables = []
     lines = content.split(";\n")
@@ -112,11 +142,20 @@ def main():
             for data in data_lines:
                 data = data.split(")")[0]
                 data = data.split(",")
-                # print(data)
                 found_table.add_data(data)
 
-    sql_file.close()
-    mkdir("output", 0o755)
+    return tables
+
+
+def main():
+    file = open("demo.sql", "r")
+    tables = create_tables_from_sql(file)
+    file.close()
+    try:
+        mkdir("output", 0o755, )
+    except FileExistsError:
+        pass
+
     chdir("output")
     for table in tables:
         table.output_to_file()
